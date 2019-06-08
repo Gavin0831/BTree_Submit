@@ -19,7 +19,7 @@ namespace sjtu {
         class const_iterator;
     private:
         static const int M=1024;
-        static const int L=256;
+        static const int L=512;
 
         struct internal_Node
         {
@@ -275,7 +275,7 @@ namespace sjtu {
                 if (key<leaf.data[pos].first)
                     break;
             }
-            for (int i=leaf.num-1;i>pos;--i)
+            for (int i=leaf.num-1;i>=pos;--i)
             {
                 leaf.data[i+1].first=leaf.data[i].first;
                 leaf.data[i+1].second=leaf.data[i].second;
@@ -789,7 +789,6 @@ namespace sjtu {
 
         iterator find(const Key& key) {
             ssize_t leaf_offset=findLeaf(key,info.root);
-            std::cout<<leaf_offset<<' ';
             if (leaf_offset==0)
                 return end();
             leaf_Node leaf;
@@ -814,4 +813,3 @@ namespace sjtu {
         }
     };
 }  // namespace sjtu
-
