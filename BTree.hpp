@@ -19,7 +19,7 @@ namespace sjtu {
         class const_iterator;
     private:
         static const int M=1024;
-        static const int L=512;
+        static const int L=128;
 
         struct internal_Node
         {
@@ -78,12 +78,12 @@ namespace sjtu {
         struct filename
         {
             char *ch;
-            filename(){ch=new char[14];}
+            filename(){ch=new char[16];}
             ~filename(){delete ch;}
             void initialize(int no)
             {
-                strcpy(ch,"excited .data");
-                ch[7]=no+'0';
+                strcpy(ch,"./excited .data");
+                ch[9]=no+'0';
             }
             void initialize(char *ch1)
             {
@@ -268,10 +268,12 @@ namespace sjtu {
         {
             iterator p;
             int pos=0;
+            std::cout<<leaf.num<<' ';
             for (;pos<leaf.num;++pos)
             {
-                if (key==leaf.data[pos].first)
-                    return pair<iterator,OperationResult>(iterator(),Fail);
+                if (key==leaf.data[pos].first) {
+                    return pair<iterator, OperationResult>(iterator(), Fail);
+                }
                 if (key<leaf.data[pos].first)
                     break;
             }
@@ -288,10 +290,11 @@ namespace sjtu {
             p.pos=pos;
             p.offset=leaf.offset;
             writeFile(&info,info_offset,1,sizeof(Info));
-            if (leaf.num<=L)
-                writeFile(&leaf,leaf.offset,1, sizeof(leaf_Node));
+            if (leaf.num<=L) {
+                writeFile(&leaf, leaf.offset, 1, sizeof(leaf_Node));
+            }
             else {
-                LeafDivision(leaf, p, key);
+                LeafDivision(leaf,p,key);
             }
             return pair<iterator,OperationResult>(p,Success);
         }
@@ -330,7 +333,7 @@ namespace sjtu {
             writeFile(&leaf,leaf.offset,1, sizeof(leaf_Node));
             writeFile(&l,l.offset,1, sizeof(leaf_Node));
             internal_Node parent;
-            readFile(&parent,leaf.parent,1, sizeof(Info));
+            readFile(&parent,leaf.parent,1, sizeof(internal_Node));
             node_insertion(parent,l.data[0].first,l.offset);
         }
 
@@ -796,39 +799,39 @@ namespace sjtu {
         Value at(const Key& key){
             iterator p=find(key);
             leaf_Node leaf;
-            if (p==end())
+            if (p==iterator())
                 throw index_out_of_bound();
             readFile(&leaf,p.offset,1, sizeof(leaf_Node));
             return leaf.data[p.pos].second;
         }
 
         size_t count(const Key& key) const {
-            return size_t(find(key)!=iterator(nullptr));
+            return size_t(find(key)!=iterator());
         }
 
         iterator find(const Key& key) {
             ssize_t leaf_offset=findLeaf(key,info.root);
             if (leaf_offset==0)
-                return end();
+                return iterator();
             leaf_Node leaf;
             readFile(&leaf,leaf_offset,1, sizeof(leaf_Node));
             for (int i=0;i<leaf.num;++i) {
                 if (leaf.data[i].first == key)
                     return iterator(this, leaf_offset, i);
             }
-            return end();
+            return iterator();
         }
         const_iterator find(const Key& key) const {
             ssize_t leaf_offset=findLeaf(key,info.root);
             if (leaf_offset==0)
-                return cend();
+                return const_iterator();
             leaf_Node leaf;
             readFile(&leaf,leaf_offset,1, sizeof(leaf_Node));
             for (int i=0;i<leaf.num;++i) {
                 if (leaf.data[i].first == key)
                     return const_iterator(this, leaf_offset, i);
             }
-            return cend();
+            return const_iterator();
         }
     };
 }  // namespace sjtu
