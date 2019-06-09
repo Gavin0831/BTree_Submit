@@ -268,7 +268,6 @@ namespace sjtu {
         {
             iterator p;
             int pos=0;
-            std::cout<<leaf.num<<' ';
             for (;pos<leaf.num;++pos)
             {
                 if (key==leaf.data[pos].first) {
@@ -708,7 +707,6 @@ namespace sjtu {
         BTree() {
             // Todo Default
             fpName.initialize(cnt);
-            ++cnt;
             fp= nullptr;
             openFile();
             if (!fileExists)
@@ -717,14 +715,12 @@ namespace sjtu {
         BTree(const BTree& other) {
             // Todo Copy
             fpName.initialize(cnt);
-            ++cnt;
             openFile();
             copyFile(fpName.ch,other.fpName.ch);
         }
         BTree& operator=(const BTree& other) {
             // Todo Assignment
             fpName.initialize(cnt);
-            ++cnt;
             openFile();
             copyFile(fpName.ch,other.fpName.ch);
         }
