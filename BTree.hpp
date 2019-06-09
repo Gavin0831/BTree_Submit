@@ -126,7 +126,7 @@ namespace sjtu {
             }
         }
 
-        inline void readFile(void *ptr,ssize_t offset,size_t num,size_t size)
+        inline void readFile(void *ptr,ssize_t offset,size_t num,size_t size) const
         {
             fseek(fp,offset,SEEK_SET);
             fread(ptr,size,num,fp);
@@ -234,7 +234,7 @@ namespace sjtu {
             writeFile(&leaf,leaf.offset,1,sizeof(leaf_Node));
         }
 
-        ssize_t findLeaf(const Key &key,ssize_t offset)
+        ssize_t findLeaf(const Key &key,ssize_t offset) const
         {
             internal_Node p;
             readFile(&p,offset,1, sizeof(internal_Node));
@@ -290,8 +290,9 @@ namespace sjtu {
             writeFile(&info,info_offset,1,sizeof(Info));
             if (leaf.num<=L)
                 writeFile(&leaf,leaf.offset,1, sizeof(leaf_Node));
-            else
-                LeafDivision(leaf,p,key);
+            else {
+                LeafDivision(leaf, p, key);
+            }
             return pair<iterator,OperationResult>(p,Success);
         }
 
@@ -432,10 +433,22 @@ namespace sjtu {
                 offset=other.offset;
                 pos=other.pos;
             }
+            iterator(const const_iterator& other) {
+                // TODO Copy Constructor
+                tree=other.tree;
+                offset=other.offset;
+                pos=other.pos;
+            }
             iterator(BTree *copytree, ssize_t copyoffset = 0,int copypos= 0) {
                 tree =copytree;
                 offset = copyoffset;
                 pos = copypos;
+            }
+            Value getValue()
+            {
+                leaf_Node leaf;
+                tree->readFile(&leaf,offset,1, sizeof(leaf_Node));
+                return leaf.data[pos].second;
             }
             iterator operator++(int) {
                 // Todo iterator++
@@ -562,15 +575,21 @@ namespace sjtu {
                 pos=0;
                 offset=0;
             }
+            const_iterator(const BTree *copytree,ssize_t copyoffset,int copypos=0)
+            {
+                tree=copytree;
+                offset=copyoffset;
+                pos=copypos;
+            }
             const_iterator(const const_iterator& other) {
                 // TODO
-                tree=other.from;
+                tree=other.tree;
                 offset=other.offset;
                 pos=other.pos;
             }
             const_iterator(const iterator& other) {
                 // TODO
-                tree=other.from;
+                tree=other.tree;
                 offset=other.offset;
                 pos=other.pos;
             }
@@ -784,7 +803,7 @@ namespace sjtu {
         }
 
         size_t count(const Key& key) const {
-            return find(key)!=iterator(nullptr);
+            return size_t(find(key)!=iterator(nullptr));
         }
 
         iterator find(const Key& key) {
@@ -800,7 +819,7 @@ namespace sjtu {
             return end();
         }
         const_iterator find(const Key& key) const {
-            ssize_t leaf_offset=findLeaf(key);
+            ssize_t leaf_offset=findLeaf(key,info.root);
             if (leaf_offset==0)
                 return cend();
             leaf_Node leaf;
@@ -813,3 +832,4 @@ namespace sjtu {
         }
     };
 }  // namespace sjtu
+
